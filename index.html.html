@@ -1,0 +1,808 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="SkyVoyage international flight search and travel planning demo.">
+<title>SkyVoyage | International Flight Booking</title>
+
+<style>
+:root {
+  --navy: #101b3f;
+  --blue: #315efb;
+  --light: #f5f7fc;
+  --text: #18213a;
+  --muted: #68738b;
+  --border: #e3e8f2;
+  --white: #ffffff;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  background: var(--light);
+  color: var(--text);
+  line-height: 1.6;
+}
+a { color: inherit; text-decoration: none; }
+button, input, select { font: inherit; }
+.container { width: min(1120px, 92%); margin: auto; }
+
+.topbar {
+  background: var(--navy);
+  color: white;
+  text-align: center;
+  padding: 8px;
+  font-size: 12px;
+}
+header {
+  background: white;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  border-bottom: 1px solid var(--border);
+}
+nav {
+  min-height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+.logo {
+  font-size: 24px;
+  font-weight: 900;
+  color: var(--navy);
+}
+.logo span { color: var(--blue); }
+.navlinks { display: flex; gap: 22px; font-size: 14px; }
+.navlinks a:hover { color: var(--blue); }
+.btn {
+  border: 0;
+  border-radius: 10px;
+  padding: 12px 18px;
+  font-weight: bold;
+  cursor: pointer;
+}
+.primary { background: var(--blue); color: white; }
+.primary:hover { background: #2048db; }
+.menu { display: none; background: white; border: 1px solid var(--border); }
+
+.hero {
+  color: white;
+  padding: 70px 0 115px;
+  background:
+    radial-gradient(circle at 85% 15%, #496fff, transparent 35%),
+    linear-gradient(120deg, #101b3f, #263f91);
+}
+.hero-grid {
+  display: grid;
+  grid-template-columns: 1.2fr .8fr;
+  align-items: center;
+  gap: 40px;
+}
+.eyebrow {
+  display: inline-block;
+  border: 1px solid #ffffff50;
+  border-radius: 30px;
+  padding: 7px 13px;
+  font-size: 12px;
+}
+.hero h1 {
+  font-size: clamp(38px, 5vw, 62px);
+  letter-spacing: -2px;
+  line-height: 1.08;
+  margin: 20px 0;
+}
+.hero h1 span { color: #a9c3ff; }
+.hero p { color: #dbe3ff; max-width: 530px; }
+.hero-art {
+  text-align: center;
+  font-size: 150px;
+  filter: drop-shadow(0 15px 15px #0004);
+}
+.hero-note { font-size: 13px; color: #dbe3ff; }
+
+.booking { margin-top: -65px; position: relative; z-index: 2; }
+.booking-card {
+  background: white;
+  padding: 25px;
+  border-radius: 20px;
+  box-shadow: 0 15px 45px #14244b18;
+}
+.booking-card h2 { margin-top: 0; }
+.trip-types { display: flex; gap: 8px; margin-bottom: 22px; }
+.trip-types button {
+  border: 1px solid var(--border);
+  background: white;
+  border-radius: 9px;
+  padding: 9px 13px;
+  cursor: pointer;
+}
+.trip-types button.active { background: #eaf0ff; color: var(--blue); border-color: #c8d5ff; }
+
+.search-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+  align-items: end;
+}
+.field label {
+  display: block;
+  font-size: 11px;
+  text-transform: uppercase;
+  font-weight: bold;
+  color: var(--muted);
+  margin-bottom: 7px;
+}
+.field input, .field select {
+  width: 100%;
+  min-width: 0;
+  height: 48px;
+  padding: 10px;
+  border: 1px solid #dce2ed;
+  border-radius: 9px;
+  background: white;
+  color: var(--text);
+}
+.search-button { height: 48px; width: 100%; }
+.booking-foot {
+  margin-top: 15px;
+  font-size: 12px;
+  color: var(--muted);
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+.booking-foot input { accent-color: var(--blue); }
+
+section.content { padding: 70px 0; }
+.section-head { margin-bottom: 25px; }
+.kicker {
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  font-size: 11px;
+  color: var(--blue);
+  font-weight: bold;
+}
+h2.section-title {
+  font-size: clamp(27px, 3vw, 37px);
+  line-height: 1.2;
+  margin: 8px 0;
+}
+.section-desc { color: var(--muted); max-width: 650px; font-size: 14px; }
+
+.destination-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 18px;
+}
+.destination {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 15px;
+  overflow: hidden;
+}
+.destination img {
+  display: block;
+  width: 100%;
+  height: 175px;
+  object-fit: cover;
+}
+.destination-body { padding: 15px; }
+.destination h3 { margin: 0; }
+.destination p { color: var(--muted); font-size: 12px; margin: 4px 0 12px; }
+.fare { font-size: 16px; font-weight: bold; color: var(--blue); }
+.disclaimer { color: var(--muted); font-size: 11px; }
+
+.offers { background: #eaf0ff; }
+.offer-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+.offer-main {
+  background: linear-gradient(120deg, #182958, #315efb);
+  border-radius: 18px;
+  padding: 30px;
+  color: white;
+}
+.offer-main h3 { font-size: 28px; line-height: 1.2; }
+.offer-main p { color: #dce5ff; }
+.offer-list { display: grid; gap: 12px; }
+.offer {
+  background: white;
+  border-radius: 13px;
+  padding: 17px;
+}
+.offer h4 { margin: 0 0 5px; }
+.offer p { margin: 0; color: var(--muted); font-size: 13px; }
+
+.benefit-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 15px;
+}
+.benefit {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 20px;
+}
+.benefit .symbol { font-size: 28px; }
+.benefit h3 { font-size: 15px; }
+.benefit p { font-size: 12px; color: var(--muted); }
+
+.steps {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+.step {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 22px;
+}
+.step strong { color: var(--blue); font-size: 28px; }
+.step p { font-size: 13px; color: var(--muted); }
+
+.newsletter {
+  background: var(--navy);
+  border-radius: 18px;
+  padding: 30px;
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+}
+.newsletter p { color: #dbe3ff; font-size: 13px; }
+.newsletter form { display: flex; gap: 8px; }
+.newsletter input {
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid #ffffff55;
+  border-radius: 8px;
+}
+
+.faq { max-width: 800px; margin: auto; }
+.faq-item { border-bottom: 1px solid var(--border); }
+.faq-question {
+  border: 0;
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  padding: 18px 0;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
+}
+.faq-answer { display: none; color: var(--muted); font-size: 13px; padding-bottom: 18px; }
+.faq-item.open .faq-answer { display: block; }
+
+footer { background: #0b1430; color: white; padding: 45px 0 20px; }
+.footer-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  gap: 25px;
+}
+footer p, footer a { color: #b7c2e0; font-size: 12px; }
+footer a { display: block; margin: 10px 0; }
+footer h4 { font-size: 13px; }
+.footer-bottom {
+  border-top: 1px solid #ffffff25;
+  margin-top: 30px;
+  padding-top: 18px;
+  color: #b7c2e0;
+  font-size: 11px;
+}
+
+.modal-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  background: #080f25bb;
+  padding: 18px;
+  overflow-y: auto;
+  align-items: center;
+  justify-content: center;
+}
+.modal-backdrop.show { display: flex; }
+.modal {
+  width: min(700px, 100%);
+  max-height: 90vh;
+  overflow-y: auto;
+  background: white;
+  border-radius: 17px;
+  padding: 24px;
+}
+.modal-head { display: flex; justify-content: space-between; gap: 15px; }
+.modal-head button { border: 0; background: #edf1fa; border-radius: 8px; cursor: pointer; }
+.demo-warning {
+  padding: 12px;
+  background: #fff3d9;
+  border-radius: 8px;
+  font-size: 12px;
+  color: #73501b;
+}
+.flight-result {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr .8fr;
+  gap: 12px;
+  align-items: center;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--border);
+}
+.flight-result small { display: block; color: var(--muted); font-size: 11px; }
+.flight-times { font-size: 17px; font-weight: bold; }
+.flight-times .duration { font-size: 11px; font-weight: normal; color: var(--muted); }
+.flight-price { text-align: right; }
+.flight-price strong { display: block; }
+.toast {
+  position: fixed;
+  z-index: 40;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--navy);
+  color: white;
+  padding: 13px 18px;
+  border-radius: 10px;
+  display: none;
+  width: max-content;
+  max-width: 90%;
+  font-size: 13px;
+}
+.toast.show { display: block; }
+
+@media(max-width:900px) {
+  .search-grid { grid-template-columns: repeat(3, 1fr); }
+  .search-button { grid-column: span 3; }
+  .destination-grid { grid-template-columns: repeat(2, 1fr); }
+  .benefit-grid { grid-template-columns: repeat(2, 1fr); }
+  .hero-grid { grid-template-columns: 1fr .7fr; }
+  .footer-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media(max-width:650px) {
+  .navlinks {
+    display: none;
+    position: absolute;
+    top: 72px;
+    left: 0;
+    right: 0;
+    background: white;
+    padding: 20px;
+    flex-direction: column;
+    border-bottom: 1px solid var(--border);
+  }
+  .navlinks.show { display: flex; }
+  .menu { display: block; padding: 9px 12px; }
+  .nav .nav-cta { display: none; }
+  .hero { padding: 45px 0 100px; }
+  .hero-grid { grid-template-columns: 1fr; }
+  .hero-art { font-size: 90px; }
+  .hero h1 { font-size: 42px; }
+  .search-grid { grid-template-columns: 1fr 1fr; }
+  .search-button { grid-column: span 2; }
+  .booking-card { padding: 17px; }
+  .booking-foot { flex-direction: column; }
+  section.content { padding: 50px 0; }
+  .destination-grid { gap: 10px; }
+  .destination img { height: 130px; }
+  .destination-body { padding: 10px; }
+  .destination h3 { font-size: 14px; }
+  .offer-grid, .steps { grid-template-columns: 1fr; }
+  .benefit-grid { gap: 10px; }
+  .benefit { padding: 13px; }
+  .newsletter { align-items: stretch; flex-direction: column; }
+  .newsletter form { flex-direction: column; }
+  .footer-grid { gap: 15px; }
+  .flight-result { grid-template-columns: 1fr 1fr; }
+  .flight-price { grid-column: span 2; text-align: left; display: flex; justify-content: space-between; align-items: center; }
+}
+@media(max-width:380px) {
+  .destination-grid, .search-grid { grid-template-columns: 1fr; }
+  .search-button { grid-column: span 1; }
+}
+</style>
+</head>
+
+<body>
+<div class="topbar">
+  ✈ Explore the world with SkyVoyage — your journey starts here
+</div>
+
+<header>
+  <nav class="container">
+    <a href="#home" class="logo">Sky<span>Voyage</span> ✈</a>
+    <div class="navlinks" id="navlinks">
+      <a href="#flights">Flights</a>
+      <a href="#destinations">Destinations</a>
+      <a href="#offers">Travel ideas</a>
+      <a href="#why-us">Why us</a>
+      <a href="#help">Help</a>
+    </div>
+    <a class="btn primary nav-cta" href="#flights">Find flights ↗</a>
+    <button class="btn menu" id="menuButton" aria-label="Open menu">☰</button>
+  </nav>
+</header>
+
+<main>
+<section class="hero" id="home">
+  <div class="container hero-grid">
+    <div>
+      <span class="eyebrow">YOUR NEXT ADVENTURE STARTS HERE</span>
+      <h1>The world is closer than <span>you think.</span></h1>
+      <p>Discover exciting destinations, compare sample flight options and start planning a journey you'll remember.</p>
+      <p class="hero-note">✓ Simple trip planning &nbsp; ✓ Global destinations &nbsp; ✓ Clear sample fares</p>
+    </div>
+    <div class="hero-art" aria-label="Airplane">✈️</div>
+  </div>
+</section>
+
+<section class="booking container" id="flights">
+  <div class="booking-card">
+    <h2>Where would you like to go?</h2>
+    <div class="trip-types">
+      <button type="button" class="active" data-trip="round">↔ Round trip</button>
+      <button type="button" data-trip="oneway">→ One way</button>
+    </div>
+
+    <form id="searchForm">
+      <div class="search-grid">
+        <div class="field">
+          <label for="origin">From</label>
+          <input id="origin" list="airports" value="Bengaluru (BLR)" required>
+        </div>
+        <div class="field">
+          <label for="destination">To</label>
+          <input id="destination" list="airports" value="Singapore (SIN)" required>
+        </div>
+        <div class="field">
+          <label for="departure">Departure date</label>
+          <input id="departure" type="date" required>
+        </div>
+        <div class="field" id="returnField">
+          <label for="returnDate">Return date</label>
+          <input id="returnDate" type="date" required>
+        </div>
+        <div class="field">
+          <label for="passengers">Travellers</label>
+          <select id="passengers">
+            <option value="1">1 traveller</option>
+            <option value="2" selected>2 travellers</option>
+            <option value="3">3 travellers</option>
+            <option value="4">4 travellers</option>
+            <option value="5">5 travellers</option>
+            <option value="6">6 travellers</option>
+            <option value="7">7 travellers</option>
+            <option value="8">8 travellers</option>
+            <option value="9">9 travellers</option>
+          </select>
+        </div>
+        <button type="submit" class="btn primary search-button">Search flights →</button>
+      </div>
+      <datalist id="airports">
+        <option value="Bengaluru (BLR)"></option>
+        <option value="Chennai (MAA)"></option>
+        <option value="Mumbai (BOM)"></option>
+        <option value="Delhi (DEL)"></option>
+        <option value="Hyderabad (HYD)"></option>
+        <option value="Kochi (COK)"></option>
+        <option value="Singapore (SIN)"></option>
+        <option value="Dubai (DXB)"></option>
+        <option value="London Heathrow (LHR)"></option>
+        <option value="New York (JFK)"></option>
+        <option value="Tokyo Haneda (HND)"></option>
+        <option value="Paris (CDG)"></option>
+        <option value="Bangkok (BKK)"></option>
+        <option value="Sydney (SYD)"></option>
+      </datalist>
+      <div class="booking-foot">
+        <label><input type="checkbox" id="directOnly"> Prefer non-stop flights</label>
+        <span>Demo fares only — not live airline prices.</span>
+      </div>
+    </form>
+  </div>
+</section>
+
+<section class="content" id="destinations">
+  <div class="container">
+    <div class="section-head">
+      <div class="kicker">Find your next favourite place</div>
+      <h2 class="section-title">Popular destinations</h2>
+      <p class="section-desc">Get inspired by exciting cities, iconic sights and unforgettable travel experiences.</p>
+    </div>
+    <div class="destination-grid">
+      <article class="destination">
+        <img src="https://images.unsplash.com/photo-1525625293386-3f8f99389edd?auto=format&fit=crop&w=700&q=80" alt="Singapore skyline" loading="lazy">
+        <div class="destination-body"><h3>Singapore</h3><p>Asia · City escape</p><div class="fare">From ₹8,900*</div></div>
+      </article>
+      <article class="destination">
+        <img src="https://images.unsplash.com/photo-1512453979798-5ea266f8880c?auto=format&fit=crop&w=700&q=80" alt="Dubai skyline" loading="lazy">
+        <div class="destination-body"><h3>Dubai</h3><p>UAE · City and luxury</p><div class="fare">From ₹12,500*</div></div>
+      </article>
+      <article class="destination">
+        <img src="https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?auto=format&fit=crop&w=700&q=80" alt="London cityscape" loading="lazy">
+        <div class="destination-body"><h3>London</h3><p>United Kingdom · Culture</p><div class="fare">From ₹31,000*</div></div>
+      </article>
+      <article class="destination">
+        <img src="https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?auto=format&fit=crop&w=700&q=80" alt="Tokyo cityscape" loading="lazy">
+        <div class="destination-body"><h3>Tokyo</h3><p>Japan · Food and culture</p><div class="fare">From ₹27,500*</div></div>
+      </article>
+    </div>
+    <p class="disclaimer">*Illustrative sample fares only. Actual airline prices and availability will vary.</p>
+  </div>
+</section>
+
+<section class="content offers" id="offers">
+  <div class="container">
+    <div class="kicker">Travel inspiration</div>
+    <h2 class="section-title">Make your next trip special</h2>
+    <p class="section-desc">Choose a travel style and start building your itinerary.</p>
+    <div class="offer-grid">
+      <article class="offer-main">
+        <h3>One ticket. A world of possibilities.</h3>
+        <p>Plan a city break with exciting food, landmarks, shopping and local experiences.</p>
+        <a class="btn" style="background:white;color:#315efb" href="#flights">Explore flights ↗</a>
+      </article>
+      <div class="offer-list">
+        <article class="offer"><h4>🏝️ Island escapes</h4><p>Slow down by the sea and discover tropical coastlines.</p></article>
+        <article class="offer"><h4>🏙️ International cities</h4><p>Explore museums, neighbourhoods, culture and nightlife.</p></article>
+        <article class="offer"><h4>🏔️ Nature adventures</h4><p>Find mountain views, hiking routes and outdoor experiences.</p></article>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="content" id="why-us">
+  <div class="container">
+    <div class="kicker">A better planning experience</div>
+    <h2 class="section-title">Why choose SkyVoyage?</h2>
+    <p class="section-desc">Useful travel information and a straightforward way to begin planning your journey.</p>
+    <div class="benefit-grid">
+      <article class="benefit"><div class="symbol">🌍</div><h3>Global inspiration</h3><p>Discover destinations across different countries and cultures.</p></article>
+      <article class="benefit"><div class="symbol">🔎</div><h3>Easy flight search</h3><p>Enter your route, dates and traveller count in one form.</p></article>
+      <article class="benefit"><div class="symbol">🧾</div><h3>Compare options</h3><p>Review sample fares, departure times and journey duration.</p></article>
+      <article class="benefit"><div class="symbol">🧳</div><h3>Travel prepared</h3><p>Remember to check baggage, visas, passports and airline rules.</p></article>
+    </div>
+  </div>
+</section>
+
+<section class="content" id="how-it-works" style="padding-top:0">
+  <div class="container">
+    <div class="kicker">Your journey in three steps</div>
+    <h2 class="section-title">How it works</h2>
+    <div class="steps">
+      <article class="step"><strong>01</strong><h3>Search</h3><p>Choose your departure city, destination, dates and number of travellers.</p></article>
+      <article class="step"><strong>02</strong><h3>Compare</h3><p>Review sample options, timings, stops and indicative fares.</p></article>
+      <article class="step"><strong>03</strong><h3>Confirm with a provider</h3><p>A real booking system would verify availability and securely complete your booking.</p></article>
+    </div>
+  </div>
+</section>
+
+<section class="content" style="padding-top:0">
+  <div class="container newsletter">
+    <div><h2>Get travel inspiration</h2><p>Sign up for destination ideas and travel-planning tips.</p></div>
+    <form id="newsletterForm">
+      <input id="email" type="email" placeholder="Email address" aria-label="Email address" required>
+      <button class="btn primary" type="submit">Sign up</button>
+    </form>
+  </div>
+</section>
+
+<section class="content" id="help">
+  <div class="container">
+    <div class="section-head" style="text-align:center">
+      <div class="kicker">Need help?</div>
+      <h2 class="section-title">Frequently asked questions</h2>
+    </div>
+    <div class="faq">
+      <article class="faq-item open">
+        <button class="faq-question">Can I book a real flight here? <span>＋</span></button>
+        <div class="faq-answer">No. This is a front-end demo. It shows illustrative sample flight results, but does not create reservations or issue tickets.</div>
+      </article>
+      <article class="faq-item">
+        <button class="faq-question">Are these live prices? <span>＋</span></button>
+        <div class="faq-answer">No. Sample prices and flight times are for demonstration only. Live data requires an airline or travel inventory API.</div>
+      </article>
+      <article class="faq-item">
+        <button class="faq-question">What is needed for real bookings? <span>＋</span></button>
+        <div class="faq-answer">A secure backend, flight supplier API, database, authentication, payment provider, booking confirmation, cancellation workflow, customer support and appropriate compliance controls.</div>
+      </article>
+      <article class="faq-item">
+        <button class="faq-question">Can I host this website on AWS S3? <span>＋</span></button>
+        <div class="faq-answer">Yes. Save this file as index.html and upload it to an S3 bucket configured for static website hosting. For production, consider private S3 storage behind CloudFront with HTTPS.</div>
+      </article>
+      <article class="faq-item">
+        <button class="faq-question">What should I check before international travel? <span>＋</span></button>
+        <div class="faq-answer">Check passport validity, visa and transit requirements, baggage limits, travel insurance, terminal information and the airline's change and cancellation policies.</div>
+      </article>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="container">
+    <div class="footer-grid">
+      <div><a class="logo" style="color:white" href="#home">Sky<span>Voyage</span> ✈</a><p>Explore destinations, compare sample options and plan your next journey. This website is an educational demonstration.</p></div>
+      <div><h4>Explore</h4><a href="#flights">Search flights</a><a href="#destinations">Destinations</a><a href="#offers">Travel ideas</a></div>
+      <div><h4>Information</h4><a href="#how-it-works">How it works</a><a href="#help">FAQs</a><a href="#why-us">About us</a></div>
+      <div><h4>Traveller help</h4><a href="#help">Booking information</a><a href="#help">International travel</a><a href="#help">Contact information</a></div>
+    </div>
+    <div class="footer-bottom">© 2026 SkyVoyage Demo. No live flight data, payments or bookings.</div>
+  </div>
+</footer>
+
+<div class="modal-backdrop" id="resultsModal" role="dialog" aria-modal="true" aria-labelledby="resultsTitle">
+  <div class="modal">
+    <div class="modal-head">
+      <div><h2 id="resultsTitle">Sample flight results</h2><p id="summary" class="section-desc"></p></div>
+      <button id="closeModal" aria-label="Close results">✕</button>
+    </div>
+    <p class="demo-warning">Demo only: these sample options are fictional. No seats are reserved and no tickets can be purchased here.</p>
+    <div id="results"></div>
+  </div>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+const $ = selector => document.querySelector(selector);
+const today = new Date();
+today.setMinutes(today.getMinutes() - today.getTimezoneOffset());
+const todayText = today.toISOString().slice(0, 10);
+const departure = $('#departure');
+const returnDate = $('#returnDate');
+
+departure.min = todayText;
+returnDate.min = todayText;
+
+const nextWeek = new Date(today);
+nextWeek.setDate(nextWeek.getDate() + 7);
+departure.value = nextWeek.toISOString().slice(0, 10);
+
+const nextTripBack = new Date(today);
+nextTripBack.setDate(nextTripBack.getDate() + 14);
+returnDate.value = nextTripBack.toISOString().slice(0, 10);
+
+let tripType = 'round';
+
+const sampleFlights = [
+  { airline: 'SkyWays International', code: 'SW 218', depart: '08:15', arrive: '14:35', duration: '4h 50m', minutes: 290, stops: 0, price: 8900 },
+  { airline: 'Global Air', code: 'GA 604', depart: '12:40', arrive: '19:25', duration: '5h 15m', minutes: 315, stops: 1, price: 7600 },
+  { airline: 'AeroConnect', code: 'AC 130', depart: '21:10', arrive: '03:25', duration: '5h 05m', minutes: 305, stops: 0, price: 10450 },
+  { airline: 'Horizon Airlines', code: 'HA 412', depart: '06:50', arrive: '14:10', duration: '5h 50m', minutes: 350, stops: 1, price: 7200 }
+];
+
+function showToast(message) {
+  const toast = $('#toast');
+  toast.textContent = message;
+  toast.classList.add('show');
+  clearTimeout(showToast.timer);
+  showToast.timer = setTimeout(() => toast.classList.remove('show'), 3500);
+}
+
+document.querySelectorAll('[data-trip]').forEach(button => {
+  button.addEventListener('click', () => {
+    document.querySelectorAll('[data-trip]').forEach(item => item.classList.remove('active'));
+    button.classList.add('active');
+    tripType = button.dataset.trip;
+    $('#returnField').style.display = tripType === 'oneway' ? 'none' : 'block';
+    returnDate.required = tripType === 'round';
+  });
+});
+
+departure.addEventListener('change', () => {
+  returnDate.min = departure.value;
+  if (returnDate.value < departure.value) returnDate.value = departure.value;
+});
+
+$('#searchForm').addEventListener('submit', event => {
+  event.preventDefault();
+
+  const origin = $('#origin').value.trim();
+  const destination = $('#destination').value.trim();
+  const depart = departure.value;
+  const returning = returnDate.value;
+
+  if (origin.toLowerCase() === destination.toLowerCase()) {
+    showToast('Choose two different departure and destination airports.');
+    return;
+  }
+
+  if (!depart || depart < todayText) {
+    showToast('Please choose a valid departure date.');
+    return;
+  }
+
+  if (tripType === 'round' && (!returning || returning < depart)) {
+    showToast('The return date must be on or after the departure date.');
+    return;
+  }
+
+  let flights = sampleFlights.filter(flight =>
+    !$('#directOnly').checked || flight.stops === 0
+  );
+
+  if (flights.length === 0) {
+    showToast('No sample non-stop options. Turn off the non-stop filter.');
+    return;
+  }
+
+  const travellers = Number($('#passengers').value);
+  $('#summary').textContent =
+    origin + ' → ' + destination + ' | Departure: ' + depart +
+    (tripType === 'round' ? ' | Return: ' + returning : '') +
+    ' | Travellers: ' + travellers;
+
+  $('#results').innerHTML = flights.map(flight => `
+    <article class="flight-result">
+      <div>
+        <strong>${flight.airline}</strong>
+        <small>${flight.code} · Economy</small>
+        <small>${flight.stops === 0 ? 'Non-stop' : '1 stop'}</small>
+      </div>
+      <div class="flight-times">
+        ${flight.depart} → ${flight.arrive}
+        <div class="duration">${flight.duration} · sample schedule</div>
+      </div>
+      <div class="flight-price">
+        <strong>₹${flight.price.toLocaleString('en-IN')}</strong>
+        <small>per traveller · sample fare</small>
+        <button class="btn primary selectFlight" type="button"
+          data-airline="${flight.airline}">Select</button>
+      </div>
+    </article>
+  `).join('');
+
+  $('#resultsModal').classList.add('show');
+
+  document.querySelectorAll('.selectFlight').forEach(button => {
+    button.addEventListener('click', () => {
+      showToast('Demo selection only: ' + button.dataset.airline + '. No booking was made.');
+      $('#resultsModal').classList.remove('show');
+    });
+  });
+});
+
+function closeResults() {
+  $('#resultsModal').classList.remove('show');
+}
+
+$('#closeModal').addEventListener('click', closeResults);
+$('#resultsModal').addEventListener('click', event => {
+  if (event.target === $('#resultsModal')) closeResults();
+});
+document.addEventListener('keydown', event => {
+  if (event.key === 'Escape') closeResults();
+});
+
+document.querySelectorAll('.faq-question').forEach(button => {
+  button.addEventListener('click', () => {
+    button.parentElement.classList.toggle('open');
+  });
+});
+
+$('#newsletterForm').addEventListener('submit', event => {
+  event.preventDefault();
+  showToast('Thank you! Newsletter signup is a demo; no email was saved.');
+  $('#email').value = '';
+});
+
+$('#menuButton').addEventListener('click', () => {
+  $('#navlinks').classList.toggle('show');
+});
+
+document.querySelectorAll('#navlinks a').forEach(link => {
+  link.addEventListener('click', () => $('#navlinks').classList.remove('show'));
+});
+</script>
+</body>
+</html>
